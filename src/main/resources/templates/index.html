@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Expense Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+	<div class="notification">
+		    <h4>Present Employees Today: <span th:text="${presentCount}">0</span></h4>
+		</div>
+    <div class="container text-center mt-5">
+        <h2>Hotel Expense Manager</h2>
+        <div class="mt-4">
+            <a href="/add-emp" class="btn btn-primary">Add Employee</a>
+            <a href="/view-emp" class="btn btn-success">View Employees</a>
+			
+			<a href="/attendance" class="btn btn-success">Attendence</a>
+        </div>
+    </div>
+	
+
+</body>
+</html>

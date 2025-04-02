@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Employee</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">Add Employee</h2>
+		<form th:action="@{/update-employee}" method="post" th:object="${employee}">
+		    <input type="hidden" th:field="*{id}" />
+			<input type="hidden" id="originalAadhar" th:value="${employee.aadharNumber}" />
+
+		    <label>Name:</label>
+		    <input type="text" th:field="*{name}" class="form-control" required />
+
+		    <label>Mobile Number:</label>
+		    <input type="text" th:field="*{mobileNumber}" class="form-control" required />
+
+		    <label>Local Address:</label>
+		    <input type="text" th:field="*{localAddress}" class="form-control" required />
+
+		    <label>Permanent Address:</label>
+		    <input type="text" th:field="*{permanentAddress}" class="form-control" required />
+
+		    <label>Age:</label>
+		    <input type="number" th:field="*{age}" class="form-control" required />
+
+
+			<div class="mb-3">
+			<label for="aadharNumber">Aadhaar Number:</label>
+			<input  type="text" th:field="*{aadharNumber}" id="aadharNumber" name="aadharNumber" required onkeyup="checkAadharNumber()" />
+			<small id="error-message-aadhar" style="color: red;"></small>
+			</div>
+		    <label>Employee Code:</label>
+		    <input type="text" th:field="*{employeeCode}" class="form-control" readonly />
+
+		    <label>Work Type:</label>
+		    <select th:field="*{work}" class="form-control" required>
+		        <option value="KITCHEN">Kitchen</option>
+		        <option value="WAITER">Waiter</option>
+		        <option value="SECURITY">Security</option>
+		        <option value="CLEANER">Cleaner</option>
+		        <option value="HELPER">Helper</option>
+		        <option value="OTHER">Other</option>
+		    </select>
+
+		    <button type="submit" class="btn btn-success mt-3">Update Employee</button>
+		</form>
+    </div>
+	<script>
+	    function checkEmployeeId() {
+	        var employeeCode = document.getElementById("employeeCode").value;
+	        var errorMessage = document.getElementById("error-message");
+	        var submitBtn = document.getElementById("submitBtn");
+
+	        if (employeeCode.length > 0) {
+	            fetch(`/check-employee-id?employeeCode=${employeeCode}`)
+	                .then(response => response.json())
+	                .then(data => {
+	                    if (data) {
+	                        errorMessage.innerText = "Employee ID already exists!";
+	                        submitBtn.disabled = true;
+	                    } else {
+	                        errorMessage.innerText = "";
+	                        submitBtn.disabled = false;
+	                    }
+	                })
+	                .catch(error => console.error("Error checking employee ID:", error));
+	        } else {
+	            errorMessage.innerText = "";
+	            submitBtn.disabled = false;
+	        }
+	    }
+		function checkAadharNumber() {
+		    var aadharNumber = document.getElementById("aadharNumber").value;
+		    var errorMessage = document.getElementById("error-message-aadhar");
+		    var submitBtn = document.getElementById("submitBtn");
+		    
+		    // Get the original Aadhaar number (stored in a hidden field)
+		    var originalAadhar = document.getElementById("originalAadhar").value;
+
+		    // If the user re-enters the original Aadhaar number, remove the error
+			if (aadharNumber === originalAadhar) {
+			        errorMessage.innerText = "This is Old Aadhaar number.";
+			        errorMessage.style.color = "green"; // Set success message color
+			        submitBtn.disabled = false;
+			        return;
+			    }
+
+
+		    // Check if the new Aadhaar number already exists
+		    if (aadharNumber.length > 0) {
+		        fetch(`/check-aadhar-number?aadharNumber=${aadharNumber}`)
+		            .then(response => response.json())
+		            .then(data => {
+		                if (data) {
+		                    errorMessage.innerText = "Aadhaar Number already exists!";
+		                    submitBtn.disabled = true;
+		                } else {
+		                    errorMessage.innerText = "";
+		                    submitBtn.disabled = false;
+		                }
+		            })
+		            .catch(error => console.error("Error checking Aadhaar Number:", error));
+		    } else {
+		        errorMessage.innerText = "";
+		        submitBtn.disabled = false;
+		    }
+		}
+
+	</script>
+</body>
+
+</html>
