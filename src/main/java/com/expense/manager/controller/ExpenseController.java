@@ -72,6 +72,14 @@ public class ExpenseController {
         response.put("rate", item.getRate());
         return ResponseEntity.ok(response);
     }
+    
+    // Get Expenses for a Specific Employee
+    @GetMapping("/list")
+    public ResponseEntity<List<Map<String, Object>>> getTodayExpensesByEmployee(@RequestParam String employeeCode) {
+        List<Map<String, Object>> expenses = expenseService.getTodayExpensesByEmployee(employeeCode);
+        return ResponseEntity.ok(expenses);
+    }
+
 
     // ✅ API to save a new expense
     @PostMapping("/add")

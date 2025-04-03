@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.expense.manager.model.Employee;
+import com.expense.manager.model.Expense;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
@@ -19,5 +20,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 	boolean existsByAadharNumber(String aadharNumber);
 	
 	Employee findByEmployeeCode(String employeeCode);
+	
+	
+	
+	
 	
 }

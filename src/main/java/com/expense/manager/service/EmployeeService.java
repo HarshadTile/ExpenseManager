@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.expense.manager.model.Employee;
+import com.expense.manager.model.Expense;
 import com.expense.manager.repository.EmployeeRepository;
 
 import java.util.List;
@@ -36,7 +37,8 @@ public class EmployeeService {
     public Employee findByCode(String employeeCode) {
         return employeeRepository.findByEmployeeCode(employeeCode);
     }
-
+    
+    
 
     // Update employee
     public Employee updateEmployee(Long id, Employee updatedEmployee) {

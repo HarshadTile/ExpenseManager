@@ -73,41 +73,62 @@
 				       document.getElementById("amount").innerText = amount.toFixed(2);
 				   }
 
-				   // Add Expense Entry to Table & Backend
-				      function addExpense() {
-				          let empCode = document.getElementById("empCode").value;
-				          let empName = document.getElementById("empName").innerText;
-				          let itemCode = document.getElementById("itemCode").value;
-				          let itemName = document.getElementById("itemName").innerText;
-				          let rate = document.getElementById("itemRate").innerText;
-				          let quantity = document.getElementById("quantity").value;
-				          let amount = document.getElementById("amount").innerText;
+				   function fetchEmployeeExpenses() {
+				           let empCode = document.getElementById("empCode").value;
+				           if (!empCode) return;
 
-				          if (!empCode || !itemCode || !quantity) {
-				              alert("Please fill all required fields!");
-				              return;
-				          }
+				           fetch(`/expenses/list?employeeCode=${empCode}`)
+				               .then(response => response.json())
+				               .then(data => {
+				                   console.log("Fetched Expenses:", data);
+				                   let tableBody = document.getElementById("expenseTableBody");
+				                   tableBody.innerHTML = ""; // Clear existing rows
 
-				          // Add to Table
-				          let row = `<tr>
-				              <td>${itemCode}</td>
-				              <td>${itemName}</td>
-				              <td>${rate}</td>
-				              <td>${quantity}</td>
-				              <td>${amount}</td>
-				          </tr>`;
-				          document.getElementById("expenseTableBody").innerHTML += row;
+				                   data.forEach(expense => {
+				                       let row = `<tr>
+				                           <td>${expense.itemCode}</td>
+				                           <td>${expense.itemName}</td>
+				                           <td>${expense.rate}</td>
+				                           <td>${expense.quantity}</td>
+				                           <td>${expense.amount}</td>
+				                       </tr>`;
+				                       tableBody.innerHTML += row;
+				                   });
+				               })
+				               .catch(error => console.error("Error fetching expenses:", error));
+				       }
 
-				          // Save to Database
-				          fetch(`/expenses/add`, {
-				              method: "POST",
-				              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-				              body: `empCode=${empCode}&itemCode=${itemCode}&quantity=${quantity}&amount=${amount}`
-				          })
-				          .then(response => response.text())
-				          .then(data => console.log("Expense Added:", data))
-				          .catch(error => console.error("Error:", error));
-				      }
+				       // Add Expense Entry to Table & Backend
+				       function addExpense() {
+				           let empCode = document.getElementById("empCode").value;
+				           let empName = document.getElementById("empName").innerText;
+				           let itemCode = document.getElementById("itemCode").value;
+				           let itemName = document.getElementById("itemName").innerText;
+				           let rate = document.getElementById("itemRate").innerText;
+				           let quantity = document.getElementById("quantity").value;
+				           let amount = document.getElementById("amount").innerText;
+
+				           if (!empCode || !itemCode || !quantity) {
+				               alert("Please fill all required fields!");
+				               return;
+				           }
+
+				           // Save to Database
+				           fetch(`/expenses/add`, {
+				               method: "POST",
+				               headers: { "Content-Type": "application/x-www-form-urlencoded" },
+				               body: `empCode=${empCode}&itemCode=${itemCode}&quantity=${quantity}&amount=${amount}`
+				           })
+				           .then(response => response.text())
+				           .then(data => {
+				               console.log("Expense Added:", data);
+				               fetchEmployeeExpenses(); // Refresh table after adding expense
+				           })
+				           .catch(error => console.error("Error:", error));
+				       }
+
+				       // Fetch expenses whenever employee code changes
+				       document.getElementById("empCode").addEventListener("change", fetchEmployeeExpenses);
 
 				      // Update Date & Time
 				      function updateDateTime() {
