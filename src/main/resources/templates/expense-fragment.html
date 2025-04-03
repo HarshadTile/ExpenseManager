@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Expense Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+	
+	<div th:fragment="expensePopup">
+	    <div class="modal fade" id="expenseModal" tabindex="-1" aria-hidden="true">
+	        <div class="modal-dialog">
+	            <div class="modal-content">
+	                <div class="modal-header">
+	                    <h5 class="modal-title">Daily Expense Entry</h5>
+	                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+	                </div>
+	                <div class="modal-body">
+	                    
+	                    <!-- ✅ Employee Selection -->
+	                    <label>Enter Employee Code:</label>
+	                    <input type="text" id="empCode" onkeyup="fetchEmployeeDetails()">
+	                    <p><strong>Name:</strong> <span id="empName"></span></p>
+	                    <p><strong>Contact:</strong> <span id="empContact"></span></p>
+	                    
+	                    <!-- ✅ Date & Time -->
+	                    <p><strong>Date & Time:</strong> <span id="currentDateTime"></span></p>
+
+	                    <!-- ✅ Item Entry -->
+	                    <label>Enter Item Code:</label>
+	                    <input type="text" id="itemCode" onkeyup="fetchItemDetails()">
+	                    <p><strong>Item Name:</strong> <span id="itemName"></span></p>
+	                    <p><strong>Rate:</strong> <span id="itemRate"></span></p>
+	                    
+	                    <label>Quantity:</label>
+	                    <input type="number" id="quantity" oninput="calculateAmount()">
+	                    <p><strong>Amount:</strong> <span id="amount"></span></p>
+
+	                    <button class="btn btn-primary" onclick="addExpense()">Add Item</button>
+
+	                    <!-- ✅ Expense Table -->
+	                    <table class="table mt-3">
+	                        <thead>
+	                            <tr>
+	                                <th>Item Code</th>
+	                                <th>Item Name</th>
+	                                <th>Rate</th>
+	                                <th>Quantity</th>
+	                                <th>Amount</th>
+	                            </tr>
+	                        </thead>
+	                        <tbody id="expenseTableBody">
+	                        </tbody>
+	                    </table>
+
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+
+</body>
+</html>
