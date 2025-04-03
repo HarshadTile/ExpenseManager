@@ -14,5 +14,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     
     Optional<Item> findById(Long id);
     void deleteById(Long id);
-
+    
+    
+    
 }

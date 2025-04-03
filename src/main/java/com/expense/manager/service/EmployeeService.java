@@ -33,7 +33,11 @@ public class EmployeeService {
         employeeRepository.save(updatedEmployee);
     }
 
-    
+    public Employee findByCode(String employeeCode) {
+        return employeeRepository.findByEmployeeCode(employeeCode);
+    }
+
+
     // Update employee
     public Employee updateEmployee(Long id, Employee updatedEmployee) {
         return employeeRepository.findById(id).map(employee -> {

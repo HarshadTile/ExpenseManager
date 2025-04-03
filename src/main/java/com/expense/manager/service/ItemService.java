@@ -45,6 +45,11 @@ public class ItemService {
     public void deleteItem(Long id) {
         itemRepository.deleteById(id);
     }
+    
+    public Item findByCode(String itemCode) {
+        List<Item> items = itemRepository.findByItemCode(itemCode);
+        return items.isEmpty() ? null : items.get(0); // Return first item if exists
+    }
 
     // ✅ Soft delete an item
     

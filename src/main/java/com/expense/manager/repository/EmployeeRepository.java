@@ -1,6 +1,7 @@
 package com.expense.manager.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,5 +18,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 	
 	boolean existsByAadharNumber(String aadharNumber);
 	
+	Employee findByEmployeeCode(String employeeCode);
 	
 }
