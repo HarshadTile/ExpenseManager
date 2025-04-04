@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Expense Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">Employee Attendance</h2>
+
+        <table class="table table-bordered mt-4">
+            <thead>
+                <tr>
+                    <th>Employee Code</th>
+                    <th>Name</th>
+                    <th>Designation</th>
+                    <th>Attendance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="employee : ${employees}">
+                    <td th:text="${employee.employeeCode}"></td>
+                    <td th:text="${employee.name}"></td>
+                    <td th:text="${employee.work}"></td>
+                    <td>
+                        <input type="radio" 
+                               th:name="'attendance-' + ${employee.id}"
+                               th:id="'present-' + ${employee.id}"
+                               th:onchange="'markAttendance(' + ${employee.id} + ', \'PRESENT\')'"
+							   th:checked="${attendanceMap[employee.id] != null and attendanceMap[employee.id].status.name() == 'PRESENT'}"> Present
+
+                        <input type="radio" 
+                               th:name="'attendance-' + ${employee.id}"
+                               th:id="'absent-' + ${employee.id}"
+                               th:onchange="'markAttendance(' + ${employee.id} + ', \'ABSENT\')'"
+							   th:checked="${attendanceMap[employee.id] != null and attendanceMap[employee.id].status.name() == 'ABSENT'}"> Absent
+							  
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script>
+		function markAttendance(employeeId, status) {
+		    console.log("Employee:", employeeId, "Status:", status); // Debugging log
+
+		    let url = status === 'PRESENT' ? '/attendance/mark-present' : '/attendance/mark-absent';
+
+		    fetch(url, {
+		        method: "POST",
+		        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+		        body: `employeeId=${employeeId}`
+		    })
+		    .then(response => {
+		        if (!response.ok) {
+		            throw new Error("Failed to update attendance");
+		        }
+		        return response.text();
+		    })
+		    .then(data => {
+		        console.log("Server Response:", data);
+
+		        // ✅ Show a success message to the user
+		        let messageDiv = document.getElementById(`attendance-msg-${employeeId}`);
+		        messageDiv.innerText = status === 'PRESENT' ? "Marked Present ✅" : "Marked Absent ❌";
+		        messageDiv.style.color = status === 'PRESENT' ? "green" : "red";
+
+		        // Hide the message after 3 seconds
+		        setTimeout(() => { messageDiv.innerText = ""; }, 3000);
+		    })
+		    .catch(error => console.error("Error updating attendance:", error));
+		}
+
+    </script>
+</body>
+</html>

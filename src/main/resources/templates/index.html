@@ -5,142 +5,429 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hotel Expense Manager</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --topbar-height: 60px;
+            --primary-color: #3c6382;
+            --secondary-color: #0a3d62;
+            --accent-color: #f39c12;
+            --light-bg: #f5f6fa;
+            --text-light: #ecf0f1;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Navbar styles */
+        .top-navbar {
+            height: var(--topbar-height);
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo-area {
+            display: flex;
+            align-items: center;
+        }
+        
+        .menu-toggle {
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+        
+        .app-title {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .user-area {
+            display: flex;
+            align-items: center;
+        }
+        
+        .notification-badge {
+            background: var(--accent-color);
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-right: 15px;
+        }
+        
+        /* Sidebar styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--secondary-color);
+            color: var(--text-light);
+            height: calc(100vh - var(--topbar-height));
+            position: fixed;
+            top: var(--topbar-height);
+            left: 0;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            z-index: 900;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar.collapsed {
+            left: calc(-1 * var(--sidebar-width));
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-item.active {
+            background-color: var(--accent-color);
+            border-left: 5px solid white;
+        }
+        
+        .sidebar-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Main content area */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--topbar-height);
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 0;
+        }
+        
+        /* Dashboard cards */
+        .dashboard-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        /* Form styling */
+        .form-control, .btn {
+            border-radius: 5px;
+        }
+        
+        /* Modal styling */
+        .modal-content {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        
+        /* Current date time display */
+        .datetime-display {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                left: calc(-1 * var(--sidebar-width));
+            }
+            
+            .sidebar.mobile-open {
+                left: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
 </head>
-<body>
-    <div class="notification">
-        <h4>Present Employees Today: <span th:text="${presentCount}">0</span></h4>
-    </div>
-
-    <div class="container text-center mt-5">
-        <h2>Hotel Expense Manager</h2>
-        <div class="mt-4">
-            <a href="/add-emp" class="btn btn-primary">Add Employee</a>
-            <a href="/view-emp" class="btn btn-success">View Employees</a>
-            <a href="/attendance" class="btn btn-success">Attendance</a>
-            <a href="/salary" class="btn btn-success">Salary</a>
-            <a href="/items" class="btn btn-success">Item</a>
-            <a href="/items/view" class="btn btn-success">View Item</a>
-
-            <button class="btn btn-warning" onclick="openExpensePopup()">Expense</button>
-
-            <!-- Corrected Fragment Inclusion -->
-			<div th:replace="expense-fragment :: expenseModal"></div>
+<body onload="updateDateTime()">
+    <!-- Top Navigation Bar -->
+    <div class="top-navbar">
+        <div class="logo-area">
+            <div class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <h4 class="app-title">Hotel Expense Manager</h4>
+        </div>
+        <div class="user-area">
+            <div class="notification-badge">
+                <i class="fas fa-users"></i>
+                Present Employees: <span th:text="${presentCount}">0</span>
+            </div>
+            <div class="datetime-display" id="currentDateTime">Loading...</div>
         </div>
     </div>
-
-    <script>
-        function openExpensePopup() {
-            $("#expenseModal").modal("show");
-        }
-		function fetchEmployeeDetails() {
-			    let empCode = document.getElementById("empCode").value;
-			    if (!empCode) return;
-
-			    fetch(`/expenses/details?employeeCode=${empCode}`)
-			        .then(response => {
-			            if (!response.ok) throw new Error("Employee not found");
-			            return response.json();
-			        })
-			        .then(data => {
-			            console.log("Fetched Data:", data);  // Debugging Step
-			            document.getElementById("empName").innerText = data.name || "N/A";
-			            document.getElementById("empContact").innerText = data.contact || "N/A";
-			        })
-			        .catch(error => {
-			            console.error("Error:", error);
-			            document.getElementById("empName").innerText = "Not Found";
-			            document.getElementById("empContact").innerText = "Not Found";
-			        });
-			}
-			// Fetch Item Details
-			    function fetchItemDetails() {
-			        let itemCode = document.getElementById("itemCode").value;
-			        if (itemCode.length === 0) return;
-
-			        fetch(`/expenses/items/details?itemCode=${itemCode}`)
-			            .then(response => response.json())
-			            .then(data => {
-			                document.getElementById("itemName").innerText = data.name;
-			                document.getElementById("itemRate").innerText = data.rate;
-			            })
-			            .catch(error => console.error("Error:", error));
-			    }
-
-				function calculateAmount() {
-				       let rate = parseFloat(document.getElementById("itemRate").innerText) || 0;
-				       let quantity = parseInt(document.getElementById("quantity").value) || 0;
-				       let amount = rate * quantity;
-				       document.getElementById("amount").innerText = amount.toFixed(2);
-				   }
-
-				   function fetchEmployeeExpenses() {
-				           let empCode = document.getElementById("empCode").value;
-				           if (!empCode) return;
-
-				           fetch(`/expenses/list?employeeCode=${empCode}`)
-				               .then(response => response.json())
-				               .then(data => {
-				                   console.log("Fetched Expenses:", data);
-				                   let tableBody = document.getElementById("expenseTableBody");
-				                   tableBody.innerHTML = ""; // Clear existing rows
-
-				                   data.forEach(expense => {
-				                       let row = `<tr>
-				                           <td>${expense.itemCode}</td>
-				                           <td>${expense.itemName}</td>
-				                           <td>${expense.rate}</td>
-				                           <td>${expense.quantity}</td>
-				                           <td>${expense.amount}</td>
-				                       </tr>`;
-				                       tableBody.innerHTML += row;
-				                   });
-				               })
-				               .catch(error => console.error("Error fetching expenses:", error));
-				       }
-
-				       // Add Expense Entry to Table & Backend
-				       function addExpense() {
-				           let empCode = document.getElementById("empCode").value;
-				           let empName = document.getElementById("empName").innerText;
-				           let itemCode = document.getElementById("itemCode").value;
-				           let itemName = document.getElementById("itemName").innerText;
-				           let rate = document.getElementById("itemRate").innerText;
-				           let quantity = document.getElementById("quantity").value;
-				           let amount = document.getElementById("amount").innerText;
-
-				           if (!empCode || !itemCode || !quantity) {
-				               alert("Please fill all required fields!");
-				               return;
-				           }
-
-				           // Save to Database
-				           fetch(`/expenses/add`, {
-				               method: "POST",
-				               headers: { "Content-Type": "application/x-www-form-urlencoded" },
-				               body: `empCode=${empCode}&itemCode=${itemCode}&quantity=${quantity}&amount=${amount}`
-				           })
-				           .then(response => response.text())
-				           .then(data => {
-				               console.log("Expense Added:", data);
-				               fetchEmployeeExpenses(); // Refresh table after adding expense
-				           })
-				           .catch(error => console.error("Error:", error));
-				       }
-
-				       // Fetch expenses whenever employee code changes
-				       document.getElementById("empCode").addEventListener("change", fetchEmployeeExpenses);
-
-				      // Update Date & Time
-				      function updateDateTime() {
-				          setInterval(() => {
-				              let now = new Date();
-				              document.getElementById("currentDateTime").innerText = now.toLocaleString();
-				          }, 1000);
-				      }
-    </script>
+    
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li class="sidebar-item active">
+                <i class="fas fa-home"></i> Dashboard
+            </li>
+            <li class="sidebar-item" onclick="location.href='/add-emp'">
+                <i class="fas fa-user-plus"></i> Add Employee
+            </li>
+            <li class="sidebar-item" onclick="location.href='/view-emp'">
+                <i class="fas fa-users"></i> View Employees
+            </li>
+            <li class="sidebar-item" onclick="location.href='/attendance'">
+                <i class="fas fa-clipboard-check"></i> Attendance
+            </li>
+            <li class="sidebar-item" onclick="location.href='/salary'">
+                <i class="fas fa-money-bill-wave"></i> Salary
+            </li>
+            <li class="sidebar-item" onclick="location.href='/items'">
+                <i class="fas fa-box"></i> Add Items
+            </li>
+            <li class="sidebar-item" onclick="location.href='/items/view'">
+                <i class="fas fa-boxes"></i> View Items
+            </li>
+            <li class="sidebar-item" onclick="openExpensePopup()">
+                <i class="fas fa-receipt"></i> Expense
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="main-content" id="mainContent">
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3>Welcome to Hotel Expense Manager</h3>
+            </div>
+            <p>Select an option from the sidebar to manage your hotel expenses.</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-3 mb-3">
+                    <div class="dashboard-card text-center">
+                        <i class="fas fa-user-plus fa-3x mb-3 text-primary"></i>
+                        <h5>Add Employee</h5>
+                        <a href="/add-emp" class="btn btn-sm btn-primary mt-2">Go</a>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="dashboard-card text-center">
+                        <i class="fas fa-users fa-3x mb-3 text-success"></i>
+                        <h5>View Employees</h5>
+                        <a href="/view-emp" class="btn btn-sm btn-success mt-2">Go</a>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="dashboard-card text-center">
+                        <i class="fas fa-clipboard-check fa-3x mb-3 text-info"></i>
+                        <h5>Attendance</h5>
+                        <a href="/attendance" class="btn btn-sm btn-info mt-2">Go</a>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="dashboard-card text-center">
+                        <i class="fas fa-receipt fa-3x mb-3 text-warning"></i>
+                        <h5>Expenses</h5>
+                        <button class="btn btn-sm btn-warning mt-2" onclick="openExpensePopup()">Go</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Expense Modal (from your original code) -->
+    <div th:replace="expense-fragment :: expenseModal"></div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Toggle sidebar function
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+        
+        // Mobile responsive sidebar toggle
+        function checkScreenSize() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+            } else {
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
+            }
+        }
+        
+        // Check screen size on load and resize
+        window.addEventListener('load', checkScreenSize);
+        window.addEventListener('resize', checkScreenSize);
+        
+        // Open expense popup
+        function openExpensePopup() {
+            $("#expenseModal").modal("show");
+        }
+        
+        // Update Date & Time
+        function updateDateTime() {
+            setInterval(() => {
+                let now = new Date();
+                document.getElementById("currentDateTime").innerText = now.toLocaleString();
+            }, 1000);
+        }
+        
+        // Fetch Employee Details (preserved from original code)
+        function fetchEmployeeDetails() {
+            let empCode = document.getElementById("empCode").value;
+            if (!empCode) return;
 
+            fetch(`/expenses/details?employeeCode=${empCode}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Employee not found");
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Fetched Data:", data);  // Debugging Step
+                    document.getElementById("empName").innerText = data.name || "N/A";
+                    document.getElementById("empContact").innerText = data.contact || "N/A";
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("empName").innerText = "Not Found";
+                    document.getElementById("empContact").innerText = "Not Found";
+                });
+        }
+        
+        // Fetch Item Details (preserved from original code)
+        function fetchItemDetails() {
+            let itemCode = document.getElementById("itemCode").value;
+            if (itemCode.length === 0) return;
+
+            fetch(`/expenses/items/details?itemCode=${itemCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("itemName").innerText = data.name;
+                    document.getElementById("itemRate").innerText = data.rate;
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+        // Calculate Amount (preserved from original code)
+        function calculateAmount() {
+            let rate = parseFloat(document.getElementById("itemRate").innerText) || 0;
+            let quantity = parseInt(document.getElementById("quantity").value) || 0;
+            let amount = rate * quantity;
+            document.getElementById("amount").innerText = amount.toFixed(2);
+        }
+
+        // Fetch Employee Expenses (preserved from original code)
+        function fetchEmployeeExpenses() {
+            let empCode = document.getElementById("empCode").value;
+            if (!empCode) return;
+
+            fetch(`/expenses/list?employeeCode=${empCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Fetched Expenses:", data);
+                    let tableBody = document.getElementById("expenseTableBody");
+                    tableBody.innerHTML = ""; // Clear existing rows
+
+                    data.forEach(expense => {
+                        let row = `<tr>
+                            <td>${expense.itemCode}</td>
+                            <td>${expense.itemName}</td>
+                            <td>${expense.rate}</td>
+                            <td>${expense.quantity}</td>
+                            <td>${expense.amount}</td>
+                        </tr>`;
+                        tableBody.innerHTML += row;
+                    });
+                })
+                .catch(error => console.error("Error fetching expenses:", error));
+        }
+
+        // Add Expense Entry to Table & Backend (preserved from original code)
+        function addExpense() {
+            let empCode = document.getElementById("empCode").value;
+            let empName = document.getElementById("empName").innerText;
+            let itemCode = document.getElementById("itemCode").value;
+            let itemName = document.getElementById("itemName").innerText;
+            let rate = document.getElementById("itemRate").innerText;
+            let quantity = document.getElementById("quantity").value;
+            let amount = document.getElementById("amount").innerText;
+
+            if (!empCode || !itemCode || !quantity) {
+                alert("Please fill all required fields!");
+                return;
+            }
+
+            // Save to Database
+            fetch(`/expenses/add`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `empCode=${empCode}&itemCode=${itemCode}&quantity=${quantity}&amount=${amount}`
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log("Expense Added:", data);
+                fetchEmployeeExpenses(); // Refresh table after adding expense
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        // Fetch expenses whenever employee code changes (preserved from original code)
+        document.addEventListener('DOMContentLoaded', function() {
+            const empCodeElement = document.getElementById("empCode");
+            if (empCodeElement) {
+                empCodeElement.addEventListener("change", fetchEmployeeExpenses);
+            }
+        });
+    </script>
 </body>
 </html>

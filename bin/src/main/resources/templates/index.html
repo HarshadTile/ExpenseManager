@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Expense Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="notification">
+        <h4>Present Employees Today: <span th:text="${presentCount}">0</span></h4>
+    </div>
+
+    <div class="container text-center mt-5">
+        <h2>Hotel Expense Manager</h2>
+        <div class="mt-4">
+            <a href="/add-emp" class="btn btn-primary">Add Employee</a>
+            <a href="/view-emp" class="btn btn-success">View Employees</a>
+            <a href="/attendance" class="btn btn-success">Attendance</a>
+            <a href="/salary" class="btn btn-success">Salary</a>
+            <a href="/items" class="btn btn-success">Item</a>
+            <a href="/items/view" class="btn btn-success">View Item</a>
+
+            <button class="btn btn-warning" onclick="openExpensePopup()">Expense</button>
+
+            <!-- Corrected Fragment Inclusion -->
+			<div th:replace="expense-fragment :: expenseModal"></div>
+        </div>
+    </div>
+
+    <script>
+        function openExpensePopup() {
+            $("#expenseModal").modal("show");
+        }
+		function fetchEmployeeDetails() {
+			    let empCode = document.getElementById("empCode").value;
+			    if (!empCode) return;
+
+			    fetch(`/expenses/details?employeeCode=${empCode}`)
+			        .then(response => {
+			            if (!response.ok) throw new Error("Employee not found");
+			            return response.json();
+			        })
+			        .then(data => {
+			            console.log("Fetched Data:", data);  // Debugging Step
+			            document.getElementById("empName").innerText = data.name || "N/A";
+			            document.getElementById("empContact").innerText = data.contact || "N/A";
+			        })
+			        .catch(error => {
+			            console.error("Error:", error);
+			            document.getElementById("empName").innerText = "Not Found";
+			            document.getElementById("empContact").innerText = "Not Found";
+			        });
+			}
+			// Fetch Item Details
+			    function fetchItemDetails() {
+			        let itemCode = document.getElementById("itemCode").value;
+			        if (itemCode.length === 0) return;
+
+			        fetch(`/expenses/items/details?itemCode=${itemCode}`)
+			            .then(response => response.json())
+			            .then(data => {
+			                document.getElementById("itemName").innerText = data.name;
+			                document.getElementById("itemRate").innerText = data.rate;
+			            })
+			            .catch(error => console.error("Error:", error));
+			    }
+
+				function calculateAmount() {
+				       let rate = parseFloat(document.getElementById("itemRate").innerText) || 0;
+				       let quantity = parseInt(document.getElementById("quantity").value) || 0;
+				       let amount = rate * quantity;
+				       document.getElementById("amount").innerText = amount.toFixed(2);
+				   }
+
+				   // Add Expense Entry to Table & Backend
+				      function addExpense() {
+				          let empCode = document.getElementById("empCode").value;
+				          let empName = document.getElementById("empName").innerText;
+				          let itemCode = document.getElementById("itemCode").value;
+				          let itemName = document.getElementById("itemName").innerText;
+				          let rate = document.getElementById("itemRate").innerText;
+				          let quantity = document.getElementById("quantity").value;
+				          let amount = document.getElementById("amount").innerText;
+
+				          if (!empCode || !itemCode || !quantity) {
+				              alert("Please fill all required fields!");
+				              return;
+				          }
+
+				          // Add to Table
+				          let row = `<tr>
+				              <td>${itemCode}</td>
+				              <td>${itemName}</td>
+				              <td>${rate}</td>
+				              <td>${quantity}</td>
+				              <td>${amount}</td>
+				          </tr>`;
+				          document.getElementById("expenseTableBody").innerHTML += row;
+
+				          // Save to Database
+				          fetch(`/expenses/add`, {
+				              method: "POST",
+				              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+				              body: `empCode=${empCode}&itemCode=${itemCode}&quantity=${quantity}&amount=${amount}`
+				          })
+				          .then(response => response.text())
+				          .then(data => console.log("Expense Added:", data))
+				          .catch(error => console.error("Error:", error));
+				      }
+
+				      // Update Date & Time
+				      function updateDateTime() {
+				          setInterval(() => {
+				              let now = new Date();
+				              document.getElementById("currentDateTime").innerText = now.toLocaleString();
+				          }, 1000);
+				      }
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
